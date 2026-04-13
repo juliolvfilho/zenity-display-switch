@@ -10,8 +10,8 @@ CHOICE=$(zenity --list \
   --column="Mode" \
   --column="Description" \
   "primary"  "PC screen only ($PRIMARY)" \
-  "duplicate"  "Duplicate" \
-  "extend"  "Extend" \
+  "duplicate"  "Duplicate screen" \
+  "extend"  "Extend screen" \
   "secondary"   "Secondary screen only ($SECONDARY)" \
   --width=380 --height=280)
 
