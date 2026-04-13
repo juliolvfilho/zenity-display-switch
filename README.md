@@ -2,7 +2,13 @@
 
 A small **Bash** utility that mimics the Windows **Project** / **Display Switch** flow (Win+P): pick how two connected displays should be used—internal only, external only, mirror, or extend—through a lightweight **[Zenity](https://gitlab.gnome.org/GNOME/zenity)** dialog.
 
+| Windows Display Switch                                                                      | Zenity Display Switch                                                             |
+| ------------------------------------------------------------------------------------------- |:---------------------------------------------------------------------------------:|
+| ![Windows Display Switch](/docs/images/display-switch-windows.png "Windows Display Switch") | ![Zenity Display Switch](/docs/images/display-switch.png "Zenity Display Switch") |
+
 The goal is to stay **minimal**: no heavy GUI framework, only tools that are common on many Linux desktops.
+
+
 
 ## Features
 
@@ -27,7 +33,45 @@ The goal is to stay **minimal**: no heavy GUI framework, only tools that are com
 
 ## Installation
 
-Clone or copy the repository, then ensure the script is executable:
+### With Make (recommended)
+
+Requires `make` and the `install` utility (from **GNU coreutils**, usually already present).
+
+Clone the repository, then install the script into your `PATH` as `display-switch`:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/zenity-display-switch.git
+cd zenity-display-switch
+sudo make install
+```
+
+That installs to `/usr/local/bin` by default. To install under your home directory (no `sudo`):
+
+```bash
+make install PREFIX="$HOME/.local"
+```
+
+Ensure `$HOME/.local/bin` is on your `PATH` (many distributions already add it).
+
+**Packagers** can stage files with `DESTDIR`:
+
+```bash
+make install DESTDIR=/tmp/stage PREFIX=/usr
+```
+
+Uninstall removes only the installed name `display-switch` (not the copy in the clone):
+
+```bash
+sudo make uninstall
+# or, for a user-local install:
+make uninstall PREFIX="$HOME/.local"
+```
+
+Replace the clone URL with your real remote when you publish the project.
+
+### Manual (no Make)
+
+Clone or copy the repository, then make the script executable:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/zenity-display-switch.git
@@ -35,11 +79,15 @@ cd zenity-display-switch
 chmod +x display-switch.sh
 ```
 
-Replace the clone URL with your real remote when you publish the project.
-
 ## Usage
 
-Run from a terminal or a launcher:
+If you used **Make**, run the installed command (it must be on your `PATH`):
+
+```bash
+display-switch
+```
+
+If you use the **manual** layout, run it from the repository directory:
 
 ```bash
 ./display-switch.sh
@@ -49,11 +97,19 @@ Choose a mode in the dialog. Canceling the dialog exits without changing the lay
 
 ### Bind to a keyboard shortcut
 
-Most desktop environments let you assign a custom shortcut to a command. Set the command to the **absolute path** of `display-switch.sh`, for example:
+Most desktop environments let you assign a custom shortcut to a command.
 
-```text
-/home/you/Projects/zenity-display-switch/display-switch.sh
-```
+- After **`make install`**, use the command name:
+
+  ```text
+  display-switch
+  ```
+
+- With a **manual** clone, use the **absolute path** to the script, for example:
+
+  ```text
+  /home/you/Projects/zenity-display-switch/display-switch.sh
+  ```
 
 That gives you a Win+P-style workflow without relying on vendor-specific keys.
 
@@ -71,7 +127,7 @@ Please keep changes aligned with the project goal: **small footprint**, few depe
 
 ## License
 
-Specify a license in a `LICENSE` file at the repository root (for example MIT or GPL-3.0) and update this section once you add it.
+This project is released under the [MIT License](LICENSE).
 
 ---
 
