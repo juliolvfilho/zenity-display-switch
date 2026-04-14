@@ -113,11 +113,27 @@ Most desktop environments let you assign a custom shortcut to a command.
 
 That gives you a Win+P-style workflow without relying on vendor-specific keys.
 
+## Configuration
+
+### Display Extend Direction
+
+You can set the display extension direction from the command line.
+
+```bash
+display-switch --config extend-direction=left
+# or
+display-switch --config extend-direction=right
+```
+
+Accepted values are `left` and `right` (aliases `left-of` and `right-of` are also accepted).  
+This setting is used by the **Extend** mode.
+
+
 ## Assumptions and limitations
 
-- **Two connected displays** — The script uses the first two outputs reported as `connected` by `xrandr`. The first is treated as the “notebook” output, the second as “external”. With more than two monitors, behavior is undefined; extending the script for ordering or selection would be a natural follow-up.
-- **Extend direction** — “Extend” is fixed as **right-of** the internal panel. Other geometries (left, above, primary) are not exposed yet.
-- **UI language** — Dialog strings in the current script are in **Portuguese**. The README is in English for broader discoverability; you can localize the Zenity strings to match your audience.
+- **Connected display ordering** — The script uses the first two outputs reported as `connected` by `xrandr`. The first is treated as “primary” and the second as “secondary”. With more than two monitors, behavior is undefined; extending the script for explicit selection would be a natural follow-up.
+- **Single-monitor behavior** — If no secondary monitor is detected, the script warns the user and keeps only the primary display enabled.
+- **Extend direction options** — Extend direction supports `left` and `right` through configuration. Other geometries (`above`, `below`, etc.) are not exposed yet.
 
 ## Contributing
 
