@@ -20,10 +20,10 @@ case "$CHOICE" in
     xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --off
     ;;
   duplicate)
-    xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --same-as "$PRIMARY"
+    xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --auto --same-as "$PRIMARY"
     ;;
   extend)
-    xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --right-of "$PRIMARY"
+    xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --auto --right-of "$PRIMARY"
     ;;
   secondary)
     xrandr --output "$SECONDARY" --auto --output "$PRIMARY" --off
