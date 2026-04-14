@@ -128,12 +128,39 @@ display-switch --config extend-direction=right
 Accepted values are `left` and `right` (aliases `left-of` and `right-of` are also accepted).  
 This setting is used by the **Extend** mode.
 
+### Cinnamon Wallpaper Aspect Per Mode
+
+On Linux Mint/Cinnamon, you can save a wallpaper aspect preference per display mode.
+
+Config keys follow this format:
+
+```text
+cinnamon-wallpaper-aspect-<mode>=<value>
+```
+
+Where:
+
+- `<mode>` is one of: `primary`, `duplicate`, `extend`, `secondary`
+- `<value>` is one of Cinnamon's `picture-options`: `none`, `wallpaper`, `centered`, `scaled`, `stretched`, `zoom`, `spanned`
+
+Examples:
+
+```bash
+display-switch --config cinnamon-wallpaper-aspect-primary=zoom
+display-switch --config cinnamon-wallpaper-aspect-duplicate=scaled
+display-switch --config cinnamon-wallpaper-aspect-extend=spanned
+display-switch --config cinnamon-wallpaper-aspect-secondary=zoom
+```
+
+When a display mode is selected, the script applies the configured wallpaper aspect for that mode (if set).
+
 
 ## Assumptions and limitations
 
 - **Connected display ordering** — The script uses the first two outputs reported as `connected` by `xrandr`. The first is treated as “primary” and the second as “secondary”. With more than two monitors, behavior is undefined; extending the script for explicit selection would be a natural follow-up.
 - **Single-monitor behavior** — If no secondary monitor is detected, the script warns the user and keeps only the primary display enabled.
 - **Extend direction options** — Extend direction supports `left` and `right` through configuration. Other geometries (`above`, `below`, etc.) are not exposed yet.
+- **Wallpaper aspect automation scope** — Wallpaper aspect automation uses Cinnamon's `gsettings` schema (`org.cinnamon.desktop.background picture-options`). On non-Cinnamon environments, this step is skipped.
 
 ## Contributing
 
