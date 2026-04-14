@@ -3,6 +3,10 @@
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/display-switch"
 CONFIG_FILE="$CONFIG_DIR/config"
 EXTEND_DIRECTION="right"
+CINNAMON_WALLPAPER_ASPECT_PRIMARY=""
+CINNAMON_WALLPAPER_ASPECT_DUPLICATE=""
+CINNAMON_WALLPAPER_ASPECT_EXTEND=""
+CINNAMON_WALLPAPER_ASPECT_SECONDARY=""
 
 mkdir -p "$CONFIG_DIR"
 
@@ -19,9 +23,75 @@ normalize_extend_direction() {
   esac
 }
 
+normalize_cinnamon_wallpaper_aspect() {
+  case "$1" in
+    none|wallpaper|centered|scaled|stretched|zoom|spanned) echo "$1" ;;
+    *) return 1 ;;
+  esac
+}
+
+normalize_mode_name() {
+  case "$1" in
+    primary|duplicate|extend|secondary) echo "$1" ;;
+    *) return 1 ;;
+  esac
+}
+
+save_config() {
+  {
+    echo "EXTEND_DIRECTION=$EXTEND_DIRECTION"
+    [ -n "$CINNAMON_WALLPAPER_ASPECT_PRIMARY" ] && echo "CINNAMON_WALLPAPER_ASPECT_PRIMARY=$CINNAMON_WALLPAPER_ASPECT_PRIMARY"
+    [ -n "$CINNAMON_WALLPAPER_ASPECT_DUPLICATE" ] && echo "CINNAMON_WALLPAPER_ASPECT_DUPLICATE=$CINNAMON_WALLPAPER_ASPECT_DUPLICATE"
+    [ -n "$CINNAMON_WALLPAPER_ASPECT_EXTEND" ] && echo "CINNAMON_WALLPAPER_ASPECT_EXTEND=$CINNAMON_WALLPAPER_ASPECT_EXTEND"
+    [ -n "$CINNAMON_WALLPAPER_ASPECT_SECONDARY" ] && echo "CINNAMON_WALLPAPER_ASPECT_SECONDARY=$CINNAMON_WALLPAPER_ASPECT_SECONDARY"
+  } > "$CONFIG_FILE"
+}
+
+set_cinnamon_wallpaper_aspect_for_mode() {
+  MODE_NAME="$1"
+  WALLPAPER_ASPECT="$2"
+
+  case "$MODE_NAME" in
+    primary) CINNAMON_WALLPAPER_ASPECT_PRIMARY="$WALLPAPER_ASPECT" ;;
+    duplicate) CINNAMON_WALLPAPER_ASPECT_DUPLICATE="$WALLPAPER_ASPECT" ;;
+    extend) CINNAMON_WALLPAPER_ASPECT_EXTEND="$WALLPAPER_ASPECT" ;;
+    secondary) CINNAMON_WALLPAPER_ASPECT_SECONDARY="$WALLPAPER_ASPECT" ;;
+  esac
+}
+
+get_cinnamon_wallpaper_aspect_for_mode() {
+  case "$1" in
+    primary) echo "$CINNAMON_WALLPAPER_ASPECT_PRIMARY" ;;
+    duplicate) echo "$CINNAMON_WALLPAPER_ASPECT_DUPLICATE" ;;
+    extend) echo "$CINNAMON_WALLPAPER_ASPECT_EXTEND" ;;
+    secondary) echo "$CINNAMON_WALLPAPER_ASPECT_SECONDARY" ;;
+  esac
+}
+
+apply_cinnamon_wallpaper_aspect_for_mode() {
+  MODE_NAME="$1"
+  WALLPAPER_ASPECT="$(get_cinnamon_wallpaper_aspect_for_mode "$MODE_NAME")"
+
+  if [ -z "$WALLPAPER_ASPECT" ]; then
+    return 0
+  fi
+
+  if ! command -v gsettings >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if ! gsettings writable org.cinnamon.desktop.background picture-options >/dev/null 2>&1; then
+    return 0
+  fi
+
+  gsettings set org.cinnamon.desktop.background picture-options "$WALLPAPER_ASPECT"
+}
+
 if [ "$1" = "--config" ]; then
   if [ -z "$2" ]; then
-    echo "Missing configuration value. Use: --config extend-direction=left|right"
+    echo "Missing configuration value."
+    echo "Use: --config extend-direction=left|right"
+    echo "Or:  --config cinnamon-wallpaper-aspect-primary|duplicate|extend|secondary=<value>"
     exit 1
   fi
 
@@ -33,15 +103,38 @@ if [ "$1" = "--config" ]; then
         exit 1
       fi
 
-      {
-        echo "EXTEND_DIRECTION=$EXTEND_DIRECTION"
-      } > "$CONFIG_FILE"
+      save_config
 
       echo "Configuration saved: extend-direction=$EXTEND_DIRECTION"
       exit 0
       ;;
+    cinnamon-wallpaper-aspect-*=*)
+      RAW_KEY="${2%%=*}"
+      RAW_MODE="${RAW_KEY#cinnamon-wallpaper-aspect-}"
+      RAW_VALUE="${2#*=}"
+
+      if ! MODE_NAME="$(normalize_mode_name "$RAW_MODE")"; then
+        echo "Invalid mode for wallpaper config: $RAW_MODE (use primary, duplicate, extend or secondary)"
+        exit 1
+      fi
+
+      if ! WALLPAPER_ASPECT="$(normalize_cinnamon_wallpaper_aspect "$RAW_VALUE")"; then
+        echo "Invalid value for cinnamon wallpaper aspect: $RAW_VALUE"
+        echo "Supported values: none, wallpaper, centered, scaled, stretched, zoom, spanned"
+        exit 1
+      fi
+
+      set_cinnamon_wallpaper_aspect_for_mode "$MODE_NAME" "$WALLPAPER_ASPECT"
+      save_config
+
+      echo "Configuration saved: cinnamon-wallpaper-aspect-$MODE_NAME=$WALLPAPER_ASPECT"
+      exit 0
+      ;;
     *)
-      echo "Invalid configuration key. Supported: extend-direction=left|right"
+      echo "Invalid configuration key."
+      echo "Supported keys:"
+      echo "  - extend-direction=left|right"
+      echo "  - cinnamon-wallpaper-aspect-primary|duplicate|extend|secondary=<value>"
       exit 1
       ;;
   esac
@@ -71,6 +164,7 @@ if [ -z "$SECONDARY" ]; then
     --title="Display Switch" \
     --text="No secondary monitor detected. Keeping only $PRIMARY enabled."
   xrandr --output "$PRIMARY" --auto
+  apply_cinnamon_wallpaper_aspect_for_mode "primary"
   exit 0
 fi
 
@@ -88,14 +182,18 @@ CHOICE=$(zenity --list \
 case "$CHOICE" in
   primary)
     xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --off
+    apply_cinnamon_wallpaper_aspect_for_mode "primary"
     ;;
   duplicate)
     xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --auto --same-as "$PRIMARY"
+    apply_cinnamon_wallpaper_aspect_for_mode "duplicate"
     ;;
   extend)
     xrandr --output "$PRIMARY" --auto --output "$SECONDARY" --auto "$XRANDR_POSITION_FLAG" "$PRIMARY"
+    apply_cinnamon_wallpaper_aspect_for_mode "extend"
     ;;
   secondary)
     xrandr --output "$SECONDARY" --auto --output "$PRIMARY" --off
+    apply_cinnamon_wallpaper_aspect_for_mode "secondary"
     ;;
 esac
