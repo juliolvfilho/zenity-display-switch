@@ -4,6 +4,19 @@ MONITORS=($(xrandr | grep " connected" | awk '{print $1}'))
 PRIMARY="${MONITORS[0]}"
 SECONDARY="${MONITORS[1]}"
 
+if [ -z "$PRIMARY" ]; then
+  zenity --error --title="Display Switch" --text="No connected monitors were detected by xrandr."
+  exit 1
+fi
+
+if [ -z "$SECONDARY" ]; then
+  zenity --warning \
+    --title="Display Switch" \
+    --text="No secondary monitor detected. Keeping only $PRIMARY enabled."
+  xrandr --output "$PRIMARY" --auto
+  exit 0
+fi
+
 CHOICE=$(zenity --list \
   --title="Display Switch" \
   --text="Choose how to use the monitors:" \
