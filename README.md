@@ -13,10 +13,10 @@ The goal is to stay **minimal**: no heavy GUI framework, only tools that are com
 ## Features
 
 - **Four modes** mapped to `xrandr`:
-  - **Notebook** — only the first detected display (treated as the built-in panel)
-  - **External** — only the second display
-  - **Duplicate** — same image on both (`--same-as`)
-  - **Extend** — second display to the right of the first (`--right-of`)
+  - **Primary** — only the first detected display
+  - **Duplicate** — same image on both
+  - **Extend** — combines both displays
+  - **Secondary** — only the second display
 - **Automatic detection** of connected outputs via `xrandr`
 - **Simple list UI** built with Zenity (GTK+, often preinstalled on GNOME-based and many other distributions)
 
